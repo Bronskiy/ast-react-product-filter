@@ -22,13 +22,13 @@ function parseUrlData(vals){
 
 function arrayToGetUrl(valueName, object){
 
-    var parameters = [];
-    var count = 0;
-    for (var property in object) {
-        if (object.hasOwnProperty(property)) {
-            parameters.push(encodeURI((count === 0 ? valueName  + '=' : '') + object[property].value));
-        }
-        count++;
+  var parameters = [];
+  var count = 0;
+  for (var property in object) {
+    if (object.hasOwnProperty(property)) {
+        parameters.push(encodeURI((count === 0 ? valueName  + '=' : '') + object[property].value));
+      }
+      count++;
     }
 
     return parameters.join(',');
@@ -105,7 +105,7 @@ class AllFilterData extends React.Component {
     window.onpopstate = e => {
       this.updatePage();
       this.updateSelected();
-      this.getFilterData();
+      // this.getFilterData();
     }
   }
 
@@ -113,6 +113,35 @@ class AllFilterData extends React.Component {
     this.updatePage();
     this.updateSelected();
     this.getFilterData();
+  }
+
+  getFilterUpdatedData(url) {
+
+    fetch(url)
+    .then(response => {
+      return response.json();
+    })
+    .then(jsonData => {
+      var arrAdjustment = [];
+      var arrMake = [];
+      var arrModel = [];
+      var arrChassis = [];
+      var arrSystem = [];
+      jsonData.data.map((product, index) => (
+        arrAdjustment.findIndex(x => x.label == product.adjustment.label) == -1 && product.adjustment.label != null ? arrAdjustment.push({ label: product.adjustment.label, value: product.adjustment.label }) : "",
+        arrMake.findIndex(x => x.label == product.make.label) == -1 && product.make.label != null  ? arrMake.push({ label: product.make.label, value: product.make.label }) : "",
+        arrModel.findIndex(x => x.label == product.model) == -1 && product.model != null  ? arrModel.push({ label: product.model, value: product.model }) : "",
+        arrChassis.findIndex(x => x.label == product.chassis) == -1 && product.chassis != null  ? arrChassis.push({ label: product.chassis, value: product.chassis }) : "",
+        arrSystem.findIndex(x => x.label == product.system.label) == -1 && product.system.label != null  ? arrSystem.push({ label: product.system.label, value: product.system.label }) : ""
+      ))
+      this.setState({
+        adjustment: arrAdjustment,
+        make: arrMake,
+        model: arrModel,
+        chassis: arrChassis,
+        system: arrSystem,
+       })
+    });
   }
 
   makeApiCall() {
@@ -128,6 +157,10 @@ class AllFilterData extends React.Component {
       +'&'
       +arrayToGetUrl('systemValue' ,this.state.systemSelected)
       +'&page='+`${this.state.meta['current_page']}`;
+      var searchUrlWithoutLimit = searchUrl + '&per_page=9999';
+
+      this.getFilterUpdatedData(searchUrlWithoutLimit);
+
     fetch(searchUrl)
     .then(response => {
       return response.json();
@@ -238,6 +271,7 @@ class AllFilterData extends React.Component {
 }
 
 class TableData extends React.Component {
+
   render() {
     return (
     <div class="row">
