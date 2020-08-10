@@ -7,12 +7,14 @@ const withRouter = window.ReactRouterDOM.withRouter;
 
 const e = React.createElement;
 
+//convert API filter values to select options format
 function parseFilterData(vals){
   return vals.map((val) => {
     return { label: val, value: val };
   });
 }
 
+//get query string parameters
 function parseUrlData(vals){
   if(vals != null && vals != undefined) {
     var valsArr = vals.split(',');
@@ -20,6 +22,7 @@ function parseUrlData(vals){
   }
 }
 
+//make query string from array
 function arrayToGetUrl(valueName, object){
 
   var parameters = [];
@@ -34,6 +37,7 @@ function arrayToGetUrl(valueName, object){
     return parameters.join(',');
 }
 
+// TODO: 'Clear' button
 class ReplaceTwigContent extends React.Component {
   render() {
     return (
@@ -116,7 +120,6 @@ class AllFilterData extends React.Component {
   }
 
   getFilterUpdatedData(url) {
-
     fetch(url)
     .then(response => {
       return response.json();
@@ -134,6 +137,17 @@ class AllFilterData extends React.Component {
         arrChassis.findIndex(x => x.label == product.chassis) == -1 && product.chassis != null  ? arrChassis.push({ label: product.chassis, value: product.chassis }) : "",
         arrSystem.findIndex(x => x.label == product.system.label) == -1 && product.system.label != null  ? arrSystem.push({ label: product.system.label, value: product.system.label }) : ""
       ))
+
+      let sortFunction = (a, b) => {
+       return a.label < b.label ? -1 : 1;
+      };
+//sort filters values alphabeticaly
+      arrAdjustment.sort(sortFunction);
+      arrMake.sort(sortFunction);
+      arrModel.sort(sortFunction);
+      arrChassis.sort(sortFunction);
+      arrSystem.sort(sortFunction);
+
       this.setState({
         adjustment: arrAdjustment,
         make: arrMake,
@@ -144,6 +158,7 @@ class AllFilterData extends React.Component {
     });
   }
 
+//call to backend to fetch results from the DB based on selected filters
   makeApiCall() {
     var searchUrl = `/api/search?s=${this.state.searched}`
       +'&'
@@ -167,7 +182,9 @@ class AllFilterData extends React.Component {
     })
     .then(jsonData => {
       this.setState({
+        //products
         data: jsonData.data,
+        //pagination
         meta: {
           total_pages:  jsonData.meta.pagination['total_pages'],
           current_page:  jsonData.meta.pagination['current_page'],
@@ -177,6 +194,7 @@ class AllFilterData extends React.Component {
        });
     });
     this.setState({
+      //switch markers to 'no' when data received
       updatedSelected: 'no',
       updatedSearch: 'no',
     });
@@ -228,6 +246,7 @@ class AllFilterData extends React.Component {
       </div>
     )
   }
+  //call to backend to receive filters/selectors options
   getFilterData() {
     fetch('/json/filters')
     .then(response => {
@@ -245,6 +264,7 @@ class AllFilterData extends React.Component {
     });
   }
 
+//update current page stored value
   updatePage() {
     var currentUrlParams = new URLSearchParams(window.location.search);
 
@@ -255,6 +275,7 @@ class AllFilterData extends React.Component {
     });
   }
 
+//update values that user selected
   updateSelected() {
     let currentUrlParams = new URLSearchParams(window.location.search);
 
@@ -330,6 +351,7 @@ class DropDownCommonSelect extends React.Component {
 
     modelValue.join() ? currentUrlParams.set(`${this.props.filterName}`, modelValue.join()) : currentUrlParams.delete(`${this.props.filterName}`);
     currentUrlParams.get('page') ? currentUrlParams.delete('page') : currentUrlParams;
+    //add selected parameters to the URL as query string
     this.props.history.push(window.location.pathname + "?" + currentUrlParams.toString());
     this.props.onSelectChange(e);
   }
@@ -399,6 +421,7 @@ class Pagination extends React.Component {
     this.props.onLinkClick(e);
   }
 
+//create link for each button in pagination element
   getPageLink(pageNumber) {
     let currentUrlParams = new URLSearchParams(window.location.search);
 
@@ -457,6 +480,7 @@ class Search extends React.Component {
   }
 }
 
+//render whole app
 if (document.querySelector('#js-product-search')) {
   ReactDOM.render(e(Search), document.querySelector('#js-product-search'));
 }
