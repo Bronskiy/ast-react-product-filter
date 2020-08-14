@@ -1,5 +1,5 @@
 # ast-react-product-filter
 
-Filters options json data https://ast7.ast-suspension.com/json/filters
+Filters options json data https://your.domain/json/filters
 
-Products data https://ast7.ast-suspension.com/api/search
+Products data https://your.domain/api/search
